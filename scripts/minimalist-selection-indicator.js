@@ -4,8 +4,11 @@ const PREVIEW_KEYS = [
   "thickness",
   "opacity",
   "padding",
-  "selectedColor",
-  "hoverColor"
+  "customDispositionColors",
+  "friendlyColor",
+  "neutralColor",
+  "hostileColor",
+  "secretColor"
 ];
 
 const previewSettings = new Map();
@@ -87,7 +90,11 @@ function refreshBorderOverride() {
   const border = this.border;
   border.clear();
 
-  if (!this.visible) return;
+  // Only draw a border while a token is selected, hovered, or highlighted.
+  if (!this.visible || !(this.controlled || this.hover || this.layer?.highlightObjects)) return;
+
+  const color = this._getBorderColor();
+  if (color === null || color === undefined) return;
 
   const style = setting("style");
   const thickness = setting("thickness");
@@ -108,14 +115,35 @@ function refreshBorderOverride() {
     opacity * 0.35,
     paddingPct
   );
-  drawIndicator(border, this, style, lineWidth, 0xFFFFFF, opacity, paddingPct);
+  drawIndicator(border, this, style, lineWidth, color, opacity, paddingPct);
+}
+
+// Respect the TokenDocument's disposition, regardless of selection or hover.
+const DISPOSITION_SETTINGS = Object.freeze({
+  FRIENDLY: "friendlyColor",
+  NEUTRAL: "neutralColor",
+  HOSTILE: "hostileColor",
+  SECRET: "secretColor"
+});
+
+function nativeDispositionColor(disposition) {
+  return CONFIG.Canvas.dispositionColors[disposition]
+    ?? CONFIG.Canvas.dispositionColors.NEUTRAL
+    ?? 0xFFFFFF;
+}
+
+function colorToHex(color) {
+  return `#${(Number(color) & 0xFFFFFF).toString(16).padStart(6, "0").toUpperCase()}`;
 }
 
 function getBorderColorOverride() {
-  if (this.controlled) {
-    return toColorInt(setting("selectedColor"), "#D7F7FF");
-  }
-  return toColorInt(setting("hoverColor"), "#FFFFFF");
+  const disposition = Object.keys(DISPOSITION_SETTINGS).find(
+    key => this.document?.disposition === CONST.TOKEN_DISPOSITIONS[key]
+  ) ?? "NEUTRAL";
+  const nativeColor = nativeDispositionColor(disposition);
+
+  if (!setting("customDispositionColors")) return nativeColor;
+  return toColorInt(setting(DISPOSITION_SETTINGS[disposition]), colorToHex(nativeColor));
 }
 
 function colorField(initial) {
@@ -185,25 +213,28 @@ function registerSettings() {
     onChange: refreshAllTokens
   });
 
-  game.settings.register(MODULE_ID, "selectedColor", {
-    name: "MSI.Settings.SelectedColor.Name",
-    hint: "MSI.Settings.SelectedColor.Hint",
+  game.settings.register(MODULE_ID, "customDispositionColors", {
+    name: "MSI.Settings.CustomDispositionColors.Name",
+    hint: "MSI.Settings.CustomDispositionColors.Hint",
     scope: "world",
     config: true,
-    type: colorField("#D7F7FF"),
-    default: "#D7F7FF",
+    type: Boolean,
+    default: false,
     onChange: refreshAllTokens
   });
 
-  game.settings.register(MODULE_ID, "hoverColor", {
-    name: "MSI.Settings.HoverColor.Name",
-    hint: "MSI.Settings.HoverColor.Hint",
-    scope: "world",
-    config: true,
-    type: colorField("#FFFFFF"),
-    default: "#FFFFFF",
-    onChange: refreshAllTokens
-  });
+  for (const [disposition, key] of Object.entries(DISPOSITION_SETTINGS)) {
+    const defaultColor = colorToHex(nativeDispositionColor(disposition));
+    game.settings.register(MODULE_ID, key, {
+      name: `MSI.Settings.${disposition}.Name`,
+      hint: `MSI.Settings.${disposition}.Hint`,
+      scope: "world",
+      config: true,
+      type: colorField(defaultColor),
+      default: defaultColor,
+      onChange: refreshAllTokens
+    });
+  }
 }
 
 function normalizeSettingsRoot(html) {
@@ -216,6 +247,8 @@ function normalizeSettingsRoot(html) {
 function fieldValue(root, key) {
   const field = root.querySelector(`[name="${MODULE_ID}.${key}"]`);
   if (!field) return undefined;
+
+  if (key === "customDispositionColors") return field.checked;
 
   const value = field.value;
   if (["thickness", "opacity", "padding"].includes(key)) {
@@ -249,7 +282,7 @@ function addPreviewButton(html) {
   const root = normalizeSettingsRoot(html);
   if (!root) return;
 
-  const lastField = root.querySelector(`[name="${MODULE_ID}.hoverColor"]`);
+  const lastField = root.querySelector(`[name="${MODULE_ID}.secretColor"]`);
   if (!lastField) return;
 
   const lastGroup = lastField.closest(".form-group") ?? lastField.parentElement;
@@ -295,6 +328,12 @@ Hooks.on("closeSettingsConfig", () => {
   // If the window is closed without saving, return the canvas to persisted values.
   // If it was saved, persisted values are already the source of truth after this reset.
   clearPreview();
+});
+
+Hooks.on("updateToken", (document, changes) => {
+  if (Object.hasOwn(changes, "disposition")) {
+    document.object?.renderFlags.set({ refreshBorder: true });
+  }
 });
 
 Hooks.once("ready", refreshAllTokens);
