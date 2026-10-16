@@ -6,7 +6,8 @@ A tiny, system-agnostic Foundry VTT v14 module that replaces the heavy square to
 
 - **Ring** selection indicator (default)
 - **Corner brackets** alternative
-- Native Foundry **color pickers** for selected and hovered tokens
+- Uses Foundry's **native token disposition colors** (friendly, neutral, hostile, secret) by default
+- Optional custom disposition colors via native Foundry **color pickers**; applies to selection and hover
 - Adjustable thickness, opacity, and padding
 - **Apply Preview** button: test unsaved settings directly on the canvas without closing the settings window
 - English and Brazilian Portuguese localization, following Foundry's active language
@@ -25,7 +26,7 @@ A tiny, system-agnostic Foundry VTT v14 module that replaces the heavy square to
 In Foundry VTT, open **Add-on Modules → Install Module** and paste this manifest URL:
 
 ```
-https://raw.githubusercontent.com/henriquebot/minimalist-selection-indicator/main/module.json
+https://raw.githubusercontent.com/henriquebot/rpg-up-minimalist-selection-indicator/main/module.json
 ```
 
 Then enable **Minimalist Selection Indicator** in your world.
@@ -40,9 +41,11 @@ Available settings:
 - Line thickness
 - Opacity
 - Indicator padding
-- Selected token color
-- Hovered token color
+- Use custom disposition colors (off by default)
+- Friendly, neutral, hostile, and secret token colors
 - Apply Preview
+
+With custom colors disabled, the module reads the current Foundry disposition colors. Enable custom colors to override each disposition independently. The indicator uses the token's disposition even while selected.
 
 Preview changes are temporary until **Save Changes** is used. Closing the settings window without saving restores the persisted appearance.
 

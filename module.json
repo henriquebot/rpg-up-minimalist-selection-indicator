@@ -7,14 +7,14 @@
       "name": "henriquebot"
     }
   ],
-  "version": "0.2.0",
+  "version": "0.3.0",
   "compatibility": {
     "minimum": "14",
     "verified": "14.368"
   },
-  "url": "https://github.com/henriquebot/minimalist-selection-indicator",
-  "manifest": "https://raw.githubusercontent.com/henriquebot/minimalist-selection-indicator/main/module.json",
-  "download": "https://github.com/henriquebot/minimalist-selection-indicator/archive/refs/heads/main.zip",
+  "url": "https://github.com/henriquebot/rpg-up-minimalist-selection-indicator",
+  "manifest": "https://raw.githubusercontent.com/henriquebot/rpg-up-minimalist-selection-indicator/main/module.json",
+  "download": "https://github.com/henriquebot/rpg-up-minimalist-selection-indicator/archive/refs/heads/main.zip",
   "esmodules": [
     "scripts/minimalist-selection-indicator.js"
   ],

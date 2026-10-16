@@ -3,23 +3,23 @@
   "MSI.Settings.Style.Hint": "Escolha um anel fino ou quatro cantos discretos no lugar do quadrado de seleção padrão do Foundry.",
   "MSI.Settings.Style.Ring": "Anel",
   "MSI.Settings.Style.Corners": "Cantos",
-
   "MSI.Settings.Thickness.Name": "Espessura da linha",
   "MSI.Settings.Thickness.Hint": "Espessura relativa à borda normal de token do Foundry.",
-
   "MSI.Settings.Opacity.Name": "Opacidade",
   "MSI.Settings.Opacity.Hint": "Opacidade do indicador de seleção.",
-
   "MSI.Settings.Padding.Name": "Distância do indicador",
   "MSI.Settings.Padding.Hint": "Distância da borda do token em porcentagem da menor dimensão do token.",
-
-  "MSI.Settings.SelectedColor.Name": "Cor do token selecionado",
-  "MSI.Settings.SelectedColor.Hint": "Cor usada quando o token está selecionado.",
-
-  "MSI.Settings.HoverColor.Name": "Cor ao passar o mouse",
-  "MSI.Settings.HoverColor.Hint": "Cor usada quando o cursor está sobre o token.",
-
   "MSI.Preview.Button": "Aplicar prévia",
   "MSI.Preview.Hint": "Veja as configurações atuais no canvas sem salvar nem fechar esta janela.",
-  "MSI.Preview.Applied": "Prévia aplicada. Use Salvar alterações para manter estes valores."
+  "MSI.Preview.Applied": "Prévia aplicada. Use Salvar alterações para manter estes valores.",
+  "MSI.Settings.CustomDispositionColors.Name": "Usar cores personalizadas por disposição",
+  "MSI.Settings.CustomDispositionColors.Hint": "Desativado: usa as cores padrão do Foundry para cada disposição. Ativado: usa as cores abaixo nos tokens selecionados ou sob o cursor.",
+  "MSI.Settings.FRIENDLY.Name": "Cor dos tokens amigáveis",
+  "MSI.Settings.FRIENDLY.Hint": "Substitui a cor de disposição amigável quando as cores personalizadas estão ativadas.",
+  "MSI.Settings.NEUTRAL.Name": "Cor dos tokens neutros",
+  "MSI.Settings.NEUTRAL.Hint": "Substitui a cor de disposição neutra quando as cores personalizadas estão ativadas.",
+  "MSI.Settings.HOSTILE.Name": "Cor dos tokens hostis",
+  "MSI.Settings.HOSTILE.Hint": "Substitui a cor de disposição hostil quando as cores personalizadas estão ativadas.",
+  "MSI.Settings.SECRET.Name": "Cor dos tokens secretos",
+  "MSI.Settings.SECRET.Hint": "Substitui a cor de disposição secreta quando as cores personalizadas estão ativadas."
 }

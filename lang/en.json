@@ -3,23 +3,23 @@
   "MSI.Settings.Style.Hint": "Choose a thin ring or four minimal corner marks instead of Foundry's default selection square.",
   "MSI.Settings.Style.Ring": "Ring",
   "MSI.Settings.Style.Corners": "Corner brackets",
-
   "MSI.Settings.Thickness.Name": "Line thickness",
   "MSI.Settings.Thickness.Hint": "Thickness relative to Foundry's normal token border.",
-
   "MSI.Settings.Opacity.Name": "Opacity",
   "MSI.Settings.Opacity.Hint": "Opacity of the selection indicator.",
-
   "MSI.Settings.Padding.Name": "Indicator padding",
   "MSI.Settings.Padding.Hint": "Distance from the token edge as a percentage of the token's smallest dimension.",
-
-  "MSI.Settings.SelectedColor.Name": "Selected token color",
-  "MSI.Settings.SelectedColor.Hint": "Color used for a controlled token.",
-
-  "MSI.Settings.HoverColor.Name": "Hovered token color",
-  "MSI.Settings.HoverColor.Hint": "Color used while hovering a token.",
-
   "MSI.Preview.Button": "Apply preview",
   "MSI.Preview.Hint": "Preview the current values on the canvas without saving or closing this window.",
-  "MSI.Preview.Applied": "Preview applied. Use Save Changes to keep these values."
+  "MSI.Preview.Applied": "Preview applied. Use Save Changes to keep these values.",
+  "MSI.Settings.CustomDispositionColors.Name": "Use custom disposition colors",
+  "MSI.Settings.CustomDispositionColors.Hint": "Off: use the Foundry color for each token's disposition. On: use the editable colors below for selected and hovered tokens.",
+  "MSI.Settings.FRIENDLY.Name": "Friendly token color",
+  "MSI.Settings.FRIENDLY.Hint": "Override the normal friendly disposition color when custom colors are enabled.",
+  "MSI.Settings.NEUTRAL.Name": "Neutral token color",
+  "MSI.Settings.NEUTRAL.Hint": "Override the normal neutral disposition color when custom colors are enabled.",
+  "MSI.Settings.HOSTILE.Name": "Hostile token color",
+  "MSI.Settings.HOSTILE.Hint": "Override the normal hostile disposition color when custom colors are enabled.",
+  "MSI.Settings.SECRET.Name": "Secret token color",
+  "MSI.Settings.SECRET.Hint": "Override the normal secret disposition color when custom colors are enabled."
 }
