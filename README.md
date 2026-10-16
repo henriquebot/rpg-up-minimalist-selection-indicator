@@ -15,6 +15,11 @@ A tiny, system-agnostic Foundry VTT v14 module that replaces the heavy square to
 - No required dependencies
 - Uses **libWrapper** automatically if it is installed and active
 
+## Fix in 0.3.1
+
+- Removed the extra selection/hover gate that prevented some token borders from being drawn. Foundry controls when borders are visible.
+- Keeps disposition-based colors and custom overrides from 0.3.0.
+
 ## Compatibility
 
 - Foundry VTT **v14**
