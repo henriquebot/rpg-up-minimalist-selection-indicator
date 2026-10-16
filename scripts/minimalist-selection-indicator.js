@@ -90,8 +90,10 @@ function refreshBorderOverride() {
   const border = this.border;
   border.clear();
 
-  // Only draw a border while a token is selected, hovered, or highlighted.
-  if (!this.visible || !(this.controlled || this.hover || this.layer?.highlightObjects)) return;
+  // Foundry v14 manages border visibility separately from the drawing logic.
+  // Do not gate rendering on controlled/hover state here: a token border
+  // may need to be populated before its interaction state changes.
+  if (!this.visible) return;
 
   const color = this._getBorderColor();
   if (color === null || color === undefined) return;
