@@ -4,6 +4,13 @@ const PREVIEW_KEYS = [
   "thickness",
   "opacity",
   "padding",
+  "contourWidth",
+  "contrastWidth",
+  "contourOpacity",
+  "playerCharacterColors",
+  "playerMainColor",
+  "playerContrastColor",
+  "otherContrastColor",
   "customDispositionColors",
   "friendlyColor",
   "neutralColor",
@@ -13,6 +20,56 @@ const PREVIEW_KEYS = [
 
 const previewSettings = new Map();
 let previewActive = false;
+
+// A single filter is attached only to hovered/controlled tokens. Keeping it
+// on the token mesh (instead of its square/ellipse border graphics) lets the
+// outline follow the actual rendered texture alpha, including transparent gaps.
+const silhouetteFilters = new WeakMap();
+const SILHOUETTE_FRAGMENT = `
+  varying vec2 vTextureCoord;
+  uniform sampler2D uSampler;
+  uniform vec4 inputPixel;
+  uniform vec4 inputClamp;
+  uniform float uMainWidth;
+  uniform float uContrastWidth;
+  uniform float uOpacity;
+  uniform vec3 uMainColor;
+  uniform vec3 uContrastColor;
+
+  void main(void) {
+    vec4 source = texture2D(uSampler, vTextureCoord);
+    float innerAlpha = 0.0;
+    float outerAlpha = 0.0;
+    const float TWO_PI = 6.28318530718;
+
+    // Dilate the alpha mask at two different radii. Multiple distances avoid
+    // gaps on thin images and silhouettes with holes between opaque areas.
+    for (int i = 0; i < 16; i++) {
+      float angle = TWO_PI * float(i) / 16.0;
+      vec2 direction = vec2(cos(angle), sin(angle));
+      for (int j = 1; j <= 3; j++) {
+        float distanceFraction = float(j) / 3.0;
+        vec2 insideUV = vTextureCoord + direction * (uMainWidth * distanceFraction) * inputPixel.zw;
+        vec2 outsideUV = vTextureCoord + direction * ((uMainWidth + uContrastWidth) * distanceFraction) * inputPixel.zw;
+        innerAlpha = max(innerAlpha, texture2D(uSampler, clamp(insideUV, inputClamp.xy, inputClamp.zw)).a);
+        outerAlpha = max(outerAlpha, texture2D(uSampler, clamp(outsideUV, inputClamp.xy, inputClamp.zw)).a);
+      }
+    }
+
+    float mainCoverage = smoothstep(0.03, 0.8, innerAlpha);
+    float outerCoverage = smoothstep(0.03, 0.8, max(innerAlpha, outerAlpha));
+    // Preserve existing art. Draw an outline only in empty/antialiased pixels.
+    float freeAlpha = 1.0 - smoothstep(0.03, 0.35, source.a);
+    float outlineAlpha = outerCoverage * freeAlpha * uOpacity;
+    vec3 outlineColor = mix(uContrastColor, uMainColor, mainCoverage);
+
+    // The input and output of Pixi v7 filters use premultiplied alpha.
+    gl_FragColor = vec4(
+      source.rgb + outlineColor * outlineAlpha,
+      source.a + outlineAlpha
+    );
+  }
+`;
 
 function setting(key) {
   if (previewActive && previewSettings.has(key)) return previewSettings.get(key);
@@ -37,6 +94,10 @@ function refreshAllTokens() {
       refreshBorder: true,
       refreshState: true
     });
+    // A border render flag is not guaranteed to be applied immediately.
+    // Update any already-attached outline so the settings preview is live.
+    if (setting("style") === "silhouette") syncSilhouette(token);
+    else removeSilhouette(token);
   }
 }
 
@@ -86,9 +147,102 @@ function drawIndicator(graphics, token, style, lineWidth, color, alpha, paddingP
   }
 }
 
+
+function isPlayerCharacter(token) {
+  const actor = token.actor;
+  if (!actor || actor.type !== "character") return false;
+  return Boolean(actor.hasPlayerOwner)
+    || Boolean(game.users?.some(user => user.character?.id === actor.id));
+}
+
+function colorComponents(value) {
+  const number = toColorInt(value);
+  return [
+    ((number >> 16) & 255) / 255,
+    ((number >> 8) & 255) / 255,
+    (number & 255) / 255
+  ];
+}
+
+function removeSilhouette(token) {
+  const previous = silhouetteFilters.get(token);
+  if (!previous) return;
+  const mesh = previous.mesh;
+  if (mesh && !mesh.destroyed) {
+    const otherFilters = (mesh.filters ?? []).filter(filter => filter !== previous.filter);
+    mesh.filters = otherFilters.length ? otherFilters : null;
+  }
+  previous.filter.destroy?.();
+  silhouetteFilters.delete(token);
+}
+
+function syncSilhouette(token) {
+  if (setting("style") !== "silhouette") {
+    removeSilhouette(token);
+    return false;
+  }
+
+  const mesh = token.mesh;
+  if (!mesh || mesh.destroyed || !mesh.texture || typeof PIXI?.Filter !== "function") {
+    removeSilhouette(token);
+    return false;
+  }
+
+  // Selection/hover state is checked here, never while refreshing a token's
+  // native border Graphics: Foundry may refresh those before interaction state.
+  if (!token.visible || !(token.controlled || token.hover)) {
+    removeSilhouette(token);
+    return true;
+  }
+
+  const player = setting("playerCharacterColors") && isPlayerCharacter(token);
+  const mainColor = player ? setting("playerMainColor") : token._getBorderColor();
+  const contrastColor = player ? setting("playerContrastColor") : setting("otherContrastColor");
+  const mainWidth = Math.max(0.5, Number(setting("contourWidth")) || 4);
+  const contrastWidth = Math.max(0.5, Number(setting("contrastWidth")) || 1.5);
+
+  let current = silhouetteFilters.get(token);
+  if (current?.mesh !== mesh || !((mesh.filters ?? []).includes(current?.filter))) {
+    removeSilhouette(token);
+    try {
+      const filter = new PIXI.Filter(undefined, SILHOUETTE_FRAGMENT, {
+        uMainWidth: mainWidth,
+        uContrastWidth: contrastWidth,
+        uOpacity: Number(setting("contourOpacity")),
+        uMainColor: colorComponents(mainColor),
+        uContrastColor: colorComponents(contrastColor)
+      });
+      filter.padding = Math.ceil(mainWidth + contrastWidth + 2);
+      mesh.filters = [...(mesh.filters ?? []), filter];
+      current = { mesh, filter };
+      silhouetteFilters.set(token, current);
+    } catch (error) {
+      console.warn(`${MODULE_ID} | Could not install silhouette filter; using ring fallback`, error);
+      removeSilhouette(token);
+      return false;
+    }
+  } else {
+    Object.assign(current.filter.uniforms, {
+      uMainWidth: mainWidth,
+      uContrastWidth: contrastWidth,
+      uOpacity: Number(setting("contourOpacity")),
+      uMainColor: colorComponents(mainColor),
+      uContrastColor: colorComponents(contrastColor)
+    });
+    current.filter.padding = Math.ceil(mainWidth + contrastWidth + 2);
+  }
+
+  return true;
+}
+
 function refreshBorderOverride() {
   const border = this.border;
   border.clear();
+
+  // The silhouette lives on the mesh, not the border Graphics container.
+  // For unsupported renderers, retain a visible ring as a safe fallback.
+  if (syncSilhouette(this)) return;
+  removeSilhouette(this);
 
   // Foundry v14 manages border visibility separately from the drawing logic.
   // Do not gate rendering on controlled/hover state here: a token border
@@ -163,10 +317,11 @@ function registerSettings() {
     config: true,
     type: String,
     choices: {
+      silhouette: game.i18n.localize("MSI.Settings.Style.Silhouette"),
       ring: game.i18n.localize("MSI.Settings.Style.Ring"),
       corners: game.i18n.localize("MSI.Settings.Style.Corners")
     },
-    default: "ring",
+    default: "silhouette",
     onChange: refreshAllTokens
   });
 
@@ -215,6 +370,52 @@ function registerSettings() {
     onChange: refreshAllTokens
   });
 
+
+  // The silhouette has dedicated widths and opacity, independent of the
+  // legacy ring/corners thickness controls.
+  for (const [key, min, max, step, fallback] of [
+    ["contourWidth", 1, 12, 0.5, 4],
+    ["contrastWidth", 0.5, 5, 0.5, 1.5],
+    ["contourOpacity", 0.2, 1, 0.1, 1]
+  ]) {
+    game.settings.register(MODULE_ID, key, {
+      name: `MSI.Settings.${key}.Name`,
+      hint: `MSI.Settings.${key}.Hint`,
+      scope: "world",
+      config: true,
+      type: Number,
+      range: { min, max, step },
+      default: fallback,
+      onChange: refreshAllTokens
+    });
+  }
+
+  game.settings.register(MODULE_ID, "playerCharacterColors", {
+    name: "MSI.Settings.playerCharacterColors.Name",
+    hint: "MSI.Settings.playerCharacterColors.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: refreshAllTokens
+  });
+
+  for (const [key, defaultColor] of [
+    ["playerMainColor", "#FFFFFF"],
+    ["playerContrastColor", "#000000"],
+    ["otherContrastColor", "#000000"]
+  ]) {
+    game.settings.register(MODULE_ID, key, {
+      name: `MSI.Settings.${key}.Name`,
+      hint: `MSI.Settings.${key}.Hint`,
+      scope: "world",
+      config: true,
+      type: colorField(defaultColor),
+      default: defaultColor,
+      onChange: refreshAllTokens
+    });
+  }
+
   game.settings.register(MODULE_ID, "customDispositionColors", {
     name: "MSI.Settings.CustomDispositionColors.Name",
     hint: "MSI.Settings.CustomDispositionColors.Hint",
@@ -250,10 +451,10 @@ function fieldValue(root, key) {
   const field = root.querySelector(`[name="${MODULE_ID}.${key}"]`);
   if (!field) return undefined;
 
-  if (key === "customDispositionColors") return field.checked;
+  if (["customDispositionColors", "playerCharacterColors"].includes(key)) return field.checked;
 
   const value = field.value;
-  if (["thickness", "opacity", "padding"].includes(key)) {
+  if (["thickness", "opacity", "padding", "contourWidth", "contrastWidth", "contourOpacity"].includes(key)) {
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : undefined;
   }
@@ -332,9 +533,22 @@ Hooks.on("closeSettingsConfig", () => {
   clearPreview();
 });
 
+Hooks.on("hoverToken", token => syncSilhouette(token));
+Hooks.on("controlToken", token => syncSilhouette(token));
+Hooks.on("refreshToken", token => syncSilhouette(token));
+Hooks.on("drawToken", token => syncSilhouette(token));
+Hooks.on("destroyToken", token => removeSilhouette(token));
+
 Hooks.on("updateToken", (document, changes) => {
-  if (Object.hasOwn(changes, "disposition")) {
+  if (Object.hasOwn(changes, "disposition") || Object.hasOwn(changes, "texture") || Object.hasOwn(changes, "actorLink")) {
     document.object?.renderFlags.set({ refreshBorder: true });
+    if (document.object) syncSilhouette(document.object);
+  }
+});
+
+Hooks.on("updateActor", actor => {
+  for (const token of canvas?.tokens?.placeables ?? []) {
+    if (token.actor?.id === actor.id) syncSilhouette(token);
   }
 });
 
