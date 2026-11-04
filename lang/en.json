@@ -1,6 +1,6 @@
 {
   "MSI.Settings.Style.Name": "Indicator style",
-  "MSI.Settings.Style.Hint": "Choose a thin ring or four minimal corner marks instead of Foundry's default selection square.",
+  "MSI.Settings.Style.Hint": "Follow the token's transparent image silhouette (default), draw a ring, or use four corner marks.",
   "MSI.Settings.Style.Ring": "Ring",
   "MSI.Settings.Style.Corners": "Corner brackets",
   "MSI.Settings.Thickness.Name": "Line thickness",
@@ -21,5 +21,20 @@
   "MSI.Settings.HOSTILE.Name": "Hostile token color",
   "MSI.Settings.HOSTILE.Hint": "Override the normal hostile disposition color when custom colors are enabled.",
   "MSI.Settings.SECRET.Name": "Secret token color",
-  "MSI.Settings.SECRET.Hint": "Override the normal secret disposition color when custom colors are enabled."
+  "MSI.Settings.SECRET.Hint": "Override the normal secret disposition color when custom colors are enabled.",
+  "MSI.Settings.Style.Silhouette": "Image silhouette (alpha outline)",
+  "MSI.Settings.contourWidth.Name": "Main outline thickness",
+  "MSI.Settings.contourWidth.Hint": "Thickness of the main silhouette outline, in canvas pixels.",
+  "MSI.Settings.contrastWidth.Name": "Outer contrast outline thickness",
+  "MSI.Settings.contrastWidth.Hint": "Thickness of the contrasting outer edge, in canvas pixels.",
+  "MSI.Settings.contourOpacity.Name": "Silhouette outline opacity",
+  "MSI.Settings.contourOpacity.Hint": "Opacity of both silhouette outlines (default 100%).",
+  "MSI.Settings.playerCharacterColors.Name": "Use separate PC silhouette colors",
+  "MSI.Settings.playerCharacterColors.Hint": "Characters owned by players receive white main and black outer outlines by default. Disable to use disposition colors instead.",
+  "MSI.Settings.playerMainColor.Name": "PC main outline color",
+  "MSI.Settings.playerMainColor.Hint": "Main color for player character silhouette outlines (white by default).",
+  "MSI.Settings.playerContrastColor.Name": "PC outer outline color",
+  "MSI.Settings.playerContrastColor.Hint": "Outer contrast color for player characters (black by default).",
+  "MSI.Settings.otherContrastColor.Name": "Other token outer outline color",
+  "MSI.Settings.otherContrastColor.Hint": "Outer contrasting edge for non-PC tokens; their main color follows disposition."
 }
