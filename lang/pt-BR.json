@@ -1,6 +1,6 @@
 {
   "MSI.Settings.Style.Name": "Estilo do indicador",
-  "MSI.Settings.Style.Hint": "Escolha um anel fino ou quatro cantos discretos no lugar do quadrado de seleção padrão do Foundry.",
+  "MSI.Settings.Style.Hint": "Contornar a silhueta transparente da imagem (padrão), desenhar um anel ou usar quatro cantos.",
   "MSI.Settings.Style.Ring": "Anel",
   "MSI.Settings.Style.Corners": "Cantos",
   "MSI.Settings.Thickness.Name": "Espessura da linha",
@@ -21,5 +21,20 @@
   "MSI.Settings.HOSTILE.Name": "Cor dos tokens hostis",
   "MSI.Settings.HOSTILE.Hint": "Substitui a cor de disposição hostil quando as cores personalizadas estão ativadas.",
   "MSI.Settings.SECRET.Name": "Cor dos tokens secretos",
-  "MSI.Settings.SECRET.Hint": "Substitui a cor de disposição secreta quando as cores personalizadas estão ativadas."
+  "MSI.Settings.SECRET.Hint": "Substitui a cor de disposição secreta quando as cores personalizadas estão ativadas.",
+  "MSI.Settings.Style.Silhouette": "Contorno da imagem (transparência)",
+  "MSI.Settings.contourWidth.Name": "Espessura do contorno principal",
+  "MSI.Settings.contourWidth.Hint": "Espessura do contorno principal da silhueta, em pixels do canvas.",
+  "MSI.Settings.contrastWidth.Name": "Espessura do contorno externo",
+  "MSI.Settings.contrastWidth.Hint": "Espessura da borda fina de contraste, em pixels do canvas.",
+  "MSI.Settings.contourOpacity.Name": "Opacidade do contorno da imagem",
+  "MSI.Settings.contourOpacity.Hint": "Opacidade dos dois contornos (100% por padrão).",
+  "MSI.Settings.playerCharacterColors.Name": "Cores próprias para os PJs",
+  "MSI.Settings.playerCharacterColors.Hint": "Personagens controlados por jogadores têm contorno principal branco e externo preto por padrão. Desative para usar as cores de disposição.",
+  "MSI.Settings.playerMainColor.Name": "Cor principal dos PJs",
+  "MSI.Settings.playerMainColor.Hint": "Cor do contorno principal dos PJs (branco por padrão).",
+  "MSI.Settings.playerContrastColor.Name": "Cor do contorno externo dos PJs",
+  "MSI.Settings.playerContrastColor.Hint": "Cor da borda de contraste dos PJs (preto por padrão).",
+  "MSI.Settings.otherContrastColor.Name": "Cor externa dos demais tokens",
+  "MSI.Settings.otherContrastColor.Hint": "Borda fina de contraste para os outros tokens, cuja cor principal segue a disposição."
 }
